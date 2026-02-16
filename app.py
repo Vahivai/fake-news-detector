@@ -26,7 +26,7 @@ body {
     background: linear-gradient(135deg, #0f172a, #1e293b);
 }
 
-/* Single Glass Card */
+/* Glass Card */
 .glass {
     background: rgba(255,255,255,0.08);
     backdrop-filter: blur(15px);
@@ -54,10 +54,17 @@ body {
     margin-bottom: 20px;
 }
 
-/* Label */
-.label {
-    color: #cbd5f5;
-    margin-top: 10px;
+/* Section headings */
+h3 {
+    color: #38bdf8;
+}
+
+/* Divider */
+hr {
+    border: none;
+    height: 1px;
+    background: rgba(255,255,255,0.2);
+    margin: 20px 0;
 }
 
 /* Input */
@@ -70,7 +77,7 @@ textarea {
     transition: 0.3s;
 }
 
-/* Focus glow */
+/* Focus */
 textarea:focus {
     border: 1px solid #38bdf8 !important;
     box-shadow: 0 0 12px #38bdf8;
@@ -128,7 +135,7 @@ button:hover {
 """, unsafe_allow_html=True)
 
 # ==========================================
-# SINGLE GLASS UI
+# GLASS UI
 # ==========================================
 st.markdown('<div class="glass">', unsafe_allow_html=True)
 
@@ -136,21 +143,38 @@ st.markdown('<div class="glass">', unsafe_allow_html=True)
 st.markdown('<div class="title">📰 Fake News Detector</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">AI-powered news verification system</div>', unsafe_allow_html=True)
 
-# Input label
-st.markdown('<div class="label">Enter news text</div>', unsafe_allow_html=True)
+st.markdown("---")
 
-# Input box
+# HOW IT WORKS
+st.markdown("### 🔎 How it works")
+st.markdown("""
+- Paste any news text 📰  
+- Click **Analyze News**  
+- Get instant result ⚡  
+""")
+
+# EXAMPLES
+st.markdown("### 💡 Try examples")
+st.markdown("""
+- "Aliens have landed in New York City"
+- "India successfully landed Chandrayaan-3 on the Moon in 2023"
+- "Scientists say drinking water makes you immortal"
+""")
+
+# INPUT
+st.markdown("### ✍️ Enter news text")
+
 user_input = st.text_area(
     "",
     height=150,
-    placeholder="Type or paste news here..."
+    placeholder="Paste your news here..."
 )
 
-# Button
-predict_btn = st.button("🔍 Analyze News")
+# BUTTON
+predict_btn = st.button("🚀 Analyze News")
 
 # ==========================================
-# RESULT INSIDE SAME GLASS
+# PREDICTION
 # ==========================================
 if predict_btn:
 
@@ -173,8 +197,8 @@ if predict_btn:
                 unsafe_allow_html=True
             )
 
-# Close glass
+# CLOSE GLASS
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Footer
+# FOOTER
 st.markdown('<div class="footer">Developed by Muhammed and Ouku 🚀</div>', unsafe_allow_html=True)
