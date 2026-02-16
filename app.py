@@ -25,17 +25,13 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Hide default header */
-header {visibility: hidden;}
-footer {visibility: hidden;}
-
-/* Background */
+/* Background gradient */
 .stApp {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
+    background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
     color: white;
 }
 
-/* Main container */
+/* Center container */
 .block-container {
     max-width: 700px;
     margin: auto;
@@ -44,7 +40,7 @@ footer {visibility: hidden;}
 /* Title */
 .title {
     text-align: center;
-    font-size: 40px;
+    font-size: 42px;
     font-weight: bold;
     color: #38bdf8;
 }
@@ -52,22 +48,25 @@ footer {visibility: hidden;}
 /* Subtitle */
 .subtitle {
     text-align: center;
-    color: #94a3b8;
+    color: #cbd5f5;
     margin-bottom: 25px;
 }
 
-/* Card */
+/* GLASS CARD */
 .card {
-    background: #1e293b;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0px 0px 20px rgba(0,0,0,0.4);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
-/* Input */
+/* Input box */
 textarea {
-    background: #ffffff !important;
-    color: black !important;
+    background: rgba(255,255,255,0.15) !important;
+    color: white !important;
     border-radius: 10px !important;
 }
 
@@ -75,46 +74,51 @@ textarea {
 .stButton>button {
     width: 100%;
     height: 50px;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 18px;
     background: linear-gradient(90deg, #38bdf8, #0ea5e9);
     color: white;
     font-weight: bold;
     border: none;
+    transition: 0.3s;
+}
+
+.stButton>button:hover {
+    transform: scale(1.03);
 }
 
 /* Result */
 .result-box {
     text-align: center;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 15px;
     font-size: 22px;
     font-weight: bold;
+    backdrop-filter: blur(10px);
 }
 
+/* Real */
 .real {
-    background: #065f46;
+    background: rgba(16,185,129,0.2);
+    border: 1px solid rgba(16,185,129,0.5);
 }
 
+/* Fake */
 .fake {
-    background: #7f1d1d;
-}
-
-/* Metrics */
-.metric {
-    text-align: center;
-    font-size: 18px;
+    background: rgba(239,68,68,0.2);
+    border: 1px solid rgba(239,68,68,0.5);
 }
 
 /* Footer */
 .footer {
     text-align: center;
     margin-top: 30px;
-    color: #94a3b8;
+    color: #cbd5f5;
 }
 
 </style>
 """, unsafe_allow_html=True)
+
 
 # ==========================================
 # LOAD MODEL
