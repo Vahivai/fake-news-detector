@@ -1,15 +1,10 @@
 import streamlit as st
 import joblib
-import re
-import time
 
-# Try OpenAI
-try:
-    from openai import OpenAI
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-    ai_enabled = True
-except:
-    ai_enabled = False
+# ==========================================
+# LOAD MODEL
+# ==========================================
+model = joblib.load("fake_news_model.pkl")
 
 # ==========================================
 # PAGE CONFIG
@@ -21,228 +16,158 @@ st.set_page_config(
 )
 
 # ==========================================
-# GLASS UI + ANIMATION CSS
+# CSS DESIGN (GLASS + ANIMATION)
 # ==========================================
 st.markdown("""
 <style>
 
 /* Background */
-.stApp {
-    background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
-    color: white;
-}
-
-/* Center */
-.block-container {
-    max-width: 700px;
-    margin: auto;
+body {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
 }
 
 /* Title */
 .title {
     text-align: center;
-    font-size: 42px;
+    font-size: 45px;
     font-weight: bold;
     color: #38bdf8;
-    animation: fadeIn 1.5s ease-in-out;
+    animation: fadeIn 1s ease-in-out;
 }
 
 /* Subtitle */
 .subtitle {
+    noted: center;
     text-align: center;
     color: #cbd5f5;
-    margin-bottom: 25px;
-    animation: fadeIn 2s ease-in-out;
+    margin-bottom: 30px;
 }
 
 /* Glass Card */
-.card {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(15px);
-    padding: 25px;
-    border-radius: 20px;
+.glass {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
     border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    animation: fadeInUp 1s ease;
+    animation: fadeIn 1s ease-in-out;
 }
 
 /* Input */
 textarea {
-    background: rgba(255,255,255,0.15) !important;
+    background: rgba(255,255,255,0.1) !important;
     color: white !important;
-    border-radius: 10px !important;
-}
-
-/* Button */
-.stButton>button {
-    width: 100%;
-    height: 50px;
-    border-radius: 12px;
-    font-size: 18px;
-    background: linear-gradient(90deg, #38bdf8, #0ea5e9);
-    color: white;
-    font-weight: bold;
-    border: none;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    padding: 10px !important;
     transition: 0.3s;
 }
 
-.stButton>button:hover {
+/* Glow on focus */
+textarea:focus {
+    border: 1px solid #38bdf8 !important;
+    box-shadow: 0 0 10px #38bdf8;
+}
+
+/* Button */
+button {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: white;
+    border-radius: 10px;
+    padding: 10px 20px;
+    transition: 0.3s;
+}
+
+/* Hover effect */
+button:hover {
     transform: scale(1.05);
 }
 
-/* Result */
-.result-box {
-    text-align: center;
+/* Result box */
+.result {
     padding: 20px;
     border-radius: 15px;
+    margin-top: 20px;
+    text-align: center;
     font-size: 22px;
     font-weight: bold;
-    backdrop-filter: blur(10px);
-    animation: fadeIn 1s ease-in-out;
+    animation: fadeIn 0.8s ease-in-out;
 }
 
 /* Real */
 .real {
-    background: rgba(16,185,129,0.2);
-    border: 1px solid rgba(16,185,129,0.5);
+    background: rgba(34,197,94,0.2);
+    color: #22c55e;
 }
 
 /* Fake */
 .fake {
     background: rgba(239,68,68,0.2);
-    border: 1px solid rgba(239,68,68,0.5);
+    color: #ef4444;
 }
 
 /* Footer */
 .footer {
     text-align: center;
-    margin-top: 30px;
-    color: #cbd5f5;
-    animation: fadeIn 3s ease;
+    margin-top: 40px;
+    color: #94a3b8;
 }
 
-/* Animations */
+/* Animation */
 @keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# LOAD MODEL
+# TITLE
 # ==========================================
-model = joblib.load("fake_news_model.pkl")
-
-# ==========================================
-# CLEAN TEXT
-# ==========================================
-def clean_text(text):
-    text = text.lower()
-    text = re.sub(r"http\S+", "", text)
-    text = re.sub(r"[^\w\s]", " ", text)
-    return text
-
-# ==========================================
-# PREDICT
-# ==========================================
-def predict_news(text):
-    cleaned = clean_text(text)
-    probs = model.predict_proba([cleaned])[0]
-
-    fake = probs[0]
-    real = probs[1]
-
-    if real > fake:
-        return "REAL", real, fake
-    else:
-        return "FAKE", fake, real
-
-# ==========================================
-# AI EXPLANATION
-# ==========================================
-def get_ai_explanation(text, prediction):
-    if not ai_enabled:
-        return "⚠️ AI explanation not available"
-
-    prompt = f"Explain why this news is {prediction} in simple words:\n{text}"
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    return response.choices[0].message.content
-
-# ==========================================
-# UI
-# ==========================================
-
 st.markdown('<div class="title">📰 Fake News Detector</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">AI-powered verification system</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">AI-powered news verification system</div>', unsafe_allow_html=True)
 
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# ==========================================
+# INPUT CARD
+# ==========================================
+st.markdown('<div class="glass">', unsafe_allow_html=True)
 
-user_input = st.text_area("Enter news text", height=150)
+user_input = st.text_area(
+    "Enter news text",
+    height=150,
+    placeholder="Type or paste news here..."
+)
 
-if st.button("Analyze News 🔍"):
-
-    if user_input.strip() == "":
-        st.warning("Please enter some text")
-    else:
-        # Loading
-        with st.spinner("🔍 Analyzing news..."):
-            time.sleep(1.5)
-            result, main_conf, other_conf = predict_news(user_input)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # RESULT
-        if result == "REAL":
-            st.markdown(f'<div class="result-box real">🟢 REAL NEWS<br>{main_conf*100:.2f}%</div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div class="result-box fake">🔴 FAKE NEWS<br>{main_conf*100:.2f}%</div>', unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        # Metrics
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Confidence", f"{main_conf*100:.2f}%")
-        with col2:
-            st.metric("Opposite", f"{other_conf*100:.2f}%")
-
-        # Progress animation
-        progress_bar = st.progress(0)
-        for i in range(100):
-            time.sleep(0.01)
-            progress_bar.progress(i + 1)
-
-        # AI Explanation
-        with st.expander("🤖 AI Explanation"):
-            explanation = get_ai_explanation(user_input, result)
-
-            # Typing effect
-            placeholder = st.empty()
-            text = ""
-            for char in explanation:
-                text += char
-                placeholder.markdown(text)
-                time.sleep(0.01)
+predict_btn = st.button("🔍 Analyze News")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Footer
+# ==========================================
+# PREDICTION
+# ==========================================
+if predict_btn:
+
+    if user_input.strip() == "":
+        st.warning("Please enter some news text.")
+    else:
+        prediction = model.predict([user_input])[0]
+        proba = model.predict_proba([user_input])[0]
+
+        confidence = max(proba) * 100
+
+        if prediction == 1:
+            st.markdown(
+                f'<div class="result real">🟢 REAL NEWS<br>{confidence:.2f}% confidence</div>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                f'<div class="result fake">🔴 FAKE NEWS<br>{confidence:.2f}% confidence</div>',
+                unsafe_allow_html=True
+            )
+
+# ==========================================
+# FOOTER
+# ==========================================
 st.markdown('<div class="footer">Developed by Muhammed and Ouku 🚀</div>', unsafe_allow_html=True)
