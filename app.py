@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# CSS DESIGN (GLASS + ANIMATION)
+# CSS (GLASS UI + ANIMATION)
 # ==========================================
 st.markdown("""
 <style>
@@ -26,31 +26,32 @@ body {
     background: linear-gradient(135deg, #0f172a, #1e293b);
 }
 
+/* Glass Container */
+.glass {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 30px;
+    margin: 20px auto;
+    width: 85%;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    animation: fadeIn 1s ease-in-out;
+}
+
 /* Title */
 .title {
     text-align: center;
-    font-size: 45px;
+    font-size: 42px;
     font-weight: bold;
     color: #38bdf8;
-    animation: fadeIn 1s ease-in-out;
 }
 
 /* Subtitle */
 .subtitle {
-    noted: center;
     text-align: center;
     color: #cbd5f5;
-    margin-bottom: 30px;
-}
-
-/* Glass Card */
-.glass {
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 20px;
-    border: 1px solid rgba(255,255,255,0.2);
-    animation: fadeIn 1s ease-in-out;
+    margin-top: 5px;
 }
 
 /* Input */
@@ -63,10 +64,10 @@ textarea {
     transition: 0.3s;
 }
 
-/* Glow on focus */
+/* Focus effect */
 textarea:focus {
     border: 1px solid #38bdf8 !important;
-    box-shadow: 0 0 10px #38bdf8;
+    box-shadow: 0 0 12px #38bdf8;
 }
 
 /* Button */
@@ -78,12 +79,12 @@ button {
     transition: 0.3s;
 }
 
-/* Hover effect */
+/* Hover */
 button:hover {
     transform: scale(1.05);
 }
 
-/* Result box */
+/* Result */
 .result {
     padding: 20px;
     border-radius: 15px;
@@ -123,13 +124,17 @@ button:hover {
 """, unsafe_allow_html=True)
 
 # ==========================================
-# TITLE
+# GLASS HEADER (TITLE INSIDE GLASS)
 # ==========================================
+st.markdown('<div class="glass">', unsafe_allow_html=True)
+
 st.markdown('<div class="title">📰 Fake News Detector</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">AI-powered news verification system</div>', unsafe_allow_html=True)
 
+st.markdown('</div>', unsafe_allow_html=True)
+
 # ==========================================
-# INPUT CARD
+# INPUT SECTION
 # ==========================================
 st.markdown('<div class="glass">', unsafe_allow_html=True)
 
@@ -149,7 +154,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 if predict_btn:
 
     if user_input.strip() == "":
-        st.warning("Please enter some news text.")
+        st.warning("Please enter some text.")
     else:
         prediction = model.predict([user_input])[0]
         proba = model.predict_proba([user_input])[0]
