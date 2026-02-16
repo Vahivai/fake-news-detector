@@ -12,18 +12,16 @@ st.set_page_config(
 )
 
 # ==========================================
-# CUSTOM CSS (UI DESIGN)
+# CUSTOM CSS
 # ==========================================
 st.markdown("""
 <style>
 
-/* Background */
 body {
     background: linear-gradient(135deg, #0f172a, #1e293b);
     color: white;
 }
 
-/* Title */
 .title {
     text-align: center;
     font-size: 42px;
@@ -31,14 +29,12 @@ body {
     color: #38bdf8;
 }
 
-/* Subtitle */
 .subtitle {
     text-align: center;
     color: #94a3b8;
     margin-bottom: 30px;
 }
 
-/* Card */
 .card {
     background: #1e293b;
     padding: 30px;
@@ -46,7 +42,6 @@ body {
     box-shadow: 0 0 25px rgba(0,0,0,0.4);
 }
 
-/* Input box */
 textarea {
     background-color: #ffffff !important;
     color: black !important;
@@ -54,7 +49,6 @@ textarea {
     padding: 10px !important;
 }
 
-/* Button */
 .stButton>button {
     width: 100%;
     border-radius: 12px;
@@ -66,7 +60,6 @@ textarea {
     border: none;
 }
 
-/* Result */
 .result {
     text-align: center;
     font-size: 22px;
@@ -83,7 +76,6 @@ textarea {
     background-color: #7f1d1d;
 }
 
-/* Footer */
 .footer {
     text-align: center;
     color: #94a3b8;
@@ -109,12 +101,47 @@ def clean_text(text):
     return text
 
 # ==========================================
-# PREDICTION FUNCTION
+# EXPLANATION FUNCTION
+# ==========================================
+def generate_explanation(text, prediction):
+    text_lower = text.lower()
+
+    fake_keywords = ["aliens", "miracle", "cure all", "shocking", "secret", "invisible", "instant", "forever"]
+    real_keywords = ["report", "study", "research", "official", "announced", "data", "according"]
+
+    explanation = ""
+
+    if prediction == "FAKE":
+        explanation += "This news may be fake because:\n"
+        
+        if any(word in text_lower for word in fake_keywords):
+            explanation += "- It contains sensational or unrealistic claims.\n"
+        
+        if len(text.split()) < 8:
+            explanation += "- The text is too short and lacks details.\n"
+
+        explanation += "- Fake news often uses exaggerated or emotional language.\n"
+    
+    else:
+        explanation += "This news may be real because:\n"
+        
+        if any(word in text_lower for word in real_keywords):
+            explanation += "- It uses formal or factual language.\n"
+        
+        if len(text.split()) > 8:
+            explanation += "- It provides more detailed information.\n"
+
+        explanation += "- It looks like a normal informational statement.\n"
+
+    return explanation
+
+# ==========================================
+# PREDICT
 # ==========================================
 def predict_news(text):
     cleaned = clean_text(text)
     probs = model.predict_proba([cleaned])[0]
-    
+
     fake_prob = probs[0]
     real_prob = probs[1]
 
@@ -126,20 +153,15 @@ def predict_news(text):
 # ==========================================
 # UI
 # ==========================================
-
-# Title
 st.markdown('<div class="title">📰 Fake News Detector</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">AI-powered news verification system</div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Card start
 st.markdown('<div class="card">', unsafe_allow_html=True)
 
-# Input
 user_input = st.text_area("Enter news text", height=180)
 
-# Button
 if st.button("Analyze News 🔍"):
 
     if user_input.strip() == "":
@@ -149,27 +171,25 @@ if st.button("Analyze News 🔍"):
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # RESULT DISPLAY
+        # RESULT
         if result == "REAL":
-            st.markdown(
-                f'<div class="result real">🟢 REAL NEWS<br>{confidence*100:.2f}% confidence</div>',
-                unsafe_allow_html=True
-            )
+            st.markdown(f'<div class="result real">🟢 REAL NEWS<br>{confidence*100:.2f}% confidence</div>', unsafe_allow_html=True)
         else:
-            st.markdown(
-                f'<div class="result fake">🔴 FAKE NEWS<br>{confidence*100:.2f}% confidence</div>',
-                unsafe_allow_html=True
-            )
+            st.markdown(f'<div class="result fake">🔴 FAKE NEWS<br>{confidence*100:.2f}% confidence</div>', unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Progress bar
+        # Confidence bar
         st.progress(float(confidence))
+
+        # EXPLANATION
+        explanation = generate_explanation(user_input, result)
+
+        st.markdown("### 🤖 Explanation")
+        st.write(explanation)
 
         st.info("⚠️ This prediction is based on AI and may not always be correct.")
 
-# Card end
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Footer
 st.markdown('<div class="footer">Developed with ❤️ by You</div>', unsafe_allow_html=True)
