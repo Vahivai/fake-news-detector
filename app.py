@@ -1,6 +1,7 @@
 import streamlit as st
 import joblib
 import re
+import time
 
 # Try OpenAI
 try:
@@ -20,18 +21,18 @@ st.set_page_config(
 )
 
 # ==========================================
-# CUSTOM CSS (PRO UI)
+# GLASS UI + ANIMATION CSS
 # ==========================================
 st.markdown("""
 <style>
 
-/* Background gradient */
+/* Background */
 .stApp {
     background: linear-gradient(135deg, #0f172a, #1e293b, #334155);
     color: white;
 }
 
-/* Center container */
+/* Center */
 .block-container {
     max-width: 700px;
     margin: auto;
@@ -43,6 +44,7 @@ st.markdown("""
     font-size: 42px;
     font-weight: bold;
     color: #38bdf8;
+    animation: fadeIn 1.5s ease-in-out;
 }
 
 /* Subtitle */
@@ -50,20 +52,21 @@ st.markdown("""
     text-align: center;
     color: #cbd5f5;
     margin-bottom: 25px;
+    animation: fadeIn 2s ease-in-out;
 }
 
-/* GLASS CARD */
+/* Glass Card */
 .card {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
     padding: 25px;
     border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.2);
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    animation: fadeInUp 1s ease;
 }
 
-/* Input box */
+/* Input */
 textarea {
     background: rgba(255,255,255,0.15) !important;
     color: white !important;
@@ -84,7 +87,7 @@ textarea {
 }
 
 .stButton>button:hover {
-    transform: scale(1.03);
+    transform: scale(1.05);
 }
 
 /* Result */
@@ -95,6 +98,7 @@ textarea {
     font-size: 22px;
     font-weight: bold;
     backdrop-filter: blur(10px);
+    animation: fadeIn 1s ease-in-out;
 }
 
 /* Real */
@@ -114,11 +118,28 @@ textarea {
     text-align: center;
     margin-top: 30px;
     color: #cbd5f5;
+    animation: fadeIn 3s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 </style>
 """, unsafe_allow_html=True)
-
 
 # ==========================================
 # LOAD MODEL
@@ -154,9 +175,9 @@ def predict_news(text):
 # ==========================================
 def get_ai_explanation(text, prediction):
     if not ai_enabled:
-        return "AI explanation not available"
+        return "⚠️ AI explanation not available"
 
-    prompt = f"Explain why this news is {prediction} in simple words: {text}"
+    prompt = f"Explain why this news is {prediction} in simple words:\n{text}"
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -181,7 +202,10 @@ if st.button("Analyze News 🔍"):
     if user_input.strip() == "":
         st.warning("Please enter some text")
     else:
-        result, main_conf, other_conf = predict_news(user_input)
+        # Loading
+        with st.spinner("🔍 Analyzing news..."):
+            time.sleep(1.5)
+            result, main_conf, other_conf = predict_news(user_input)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -193,22 +217,32 @@ if st.button("Analyze News 🔍"):
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # METRICS
+        # Metrics
         col1, col2 = st.columns(2)
-
         with col1:
             st.metric("Confidence", f"{main_conf*100:.2f}%")
-
         with col2:
             st.metric("Opposite", f"{other_conf*100:.2f}%")
 
-        st.progress(float(main_conf))
+        # Progress animation
+        progress_bar = st.progress(0)
+        for i in range(100):
+            time.sleep(0.01)
+            progress_bar.progress(i + 1)
 
-        # AI EXPLANATION
+        # AI Explanation
         with st.expander("🤖 AI Explanation"):
             explanation = get_ai_explanation(user_input, result)
-            st.write(explanation)
+
+            # Typing effect
+            placeholder = st.empty()
+            text = ""
+            for char in explanation:
+                text += char
+                placeholder.markdown(text)
+                time.sleep(0.01)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
+# Footer
 st.markdown('<div class="footer">Developed by Muhammed and Ouku 🚀</div>', unsafe_allow_html=True)
