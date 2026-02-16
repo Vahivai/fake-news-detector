@@ -3,7 +3,7 @@ import joblib
 import re
 
 # Load model
-model = joblib.load(r"D:\project1\fake_news_model.pkl")
+model = joblib.load("fake_news_model.pkl")
 
 # Clean text
 def clean_text(text):
@@ -46,3 +46,4 @@ if st.button("Check"):
             st.success(f"REAL NEWS ({confidence*100:.2f}%)")
         else:
             st.error(f"FAKE NEWS ({confidence*100:.2f}%)")
+
