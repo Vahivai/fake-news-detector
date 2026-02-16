@@ -13,7 +13,108 @@ except:
 # ==========================================
 # PAGE CONFIG
 # ==========================================
-st.set_page_config(page_title="Fake News Detector", page_icon="📰", layout="wide")
+st.set_page_config(
+    page_title="Fake News Detector",
+    page_icon="📰",
+    layout="centered"
+)
+
+# ==========================================
+# CUSTOM CSS (PRO UI)
+# ==========================================
+st.markdown("""
+<style>
+
+/* Hide default header */
+header {visibility: hidden;}
+footer {visibility: hidden;}
+
+/* Background */
+.stApp {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+}
+
+/* Main container */
+.block-container {
+    max-width: 700px;
+    margin: auto;
+}
+
+/* Title */
+.title {
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    color: #38bdf8;
+}
+
+/* Subtitle */
+.subtitle {
+    text-align: center;
+    color: #94a3b8;
+    margin-bottom: 25px;
+}
+
+/* Card */
+.card {
+    background: #1e293b;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.4);
+}
+
+/* Input */
+textarea {
+    background: #ffffff !important;
+    color: black !important;
+    border-radius: 10px !important;
+}
+
+/* Button */
+.stButton>button {
+    width: 100%;
+    height: 50px;
+    border-radius: 10px;
+    font-size: 18px;
+    background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+    color: white;
+    font-weight: bold;
+    border: none;
+}
+
+/* Result */
+.result-box {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.real {
+    background: #065f46;
+}
+
+.fake {
+    background: #7f1d1d;
+}
+
+/* Metrics */
+.metric {
+    text-align: center;
+    font-size: 18px;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #94a3b8;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # LOAD MODEL
@@ -35,7 +136,7 @@ def clean_text(text):
 def predict_news(text):
     cleaned = clean_text(text)
     probs = model.predict_proba([cleaned])[0]
-    
+
     fake = probs[0]
     real = probs[1]
 
@@ -51,7 +152,7 @@ def get_ai_explanation(text, prediction):
     if not ai_enabled:
         return "AI explanation not available"
 
-    prompt = f"Explain why this news might be {prediction}: {text}"
+    prompt = f"Explain why this news is {prediction} in simple words: {text}"
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -61,90 +162,49 @@ def get_ai_explanation(text, prediction):
     return response.choices[0].message.content
 
 # ==========================================
-# SIDEBAR
+# UI
 # ==========================================
-st.sidebar.title("⚙️ Options")
 
-examples = [
-    "India successfully landed Chandrayaan-3 on the Moon in 2023.",
-    "Aliens have landed on Earth and taken control of governments.",
-    "Scientists discovered a new vaccine for malaria.",
-    "Drinking hot water cures all diseases instantly."
-]
+st.markdown('<div class="title">📰 Fake News Detector</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">AI-powered verification system</div>', unsafe_allow_html=True)
 
-selected_example = st.sidebar.selectbox("Try Example News", ["None"] + examples)
+st.markdown('<div class="card">', unsafe_allow_html=True)
 
-if selected_example != "None":
-    default_text = selected_example
-else:
-    default_text = ""
+user_input = st.text_area("Enter news text", height=150)
 
-clear = st.sidebar.button("Clear Text")
-
-# ==========================================
-# MAIN UI
-# ==========================================
-st.title("📰 Fake News Detector")
-st.caption("AI-powered verification system")
-
-# Input
-user_input = st.text_area("Enter news text", value=default_text, height=150)
-
-if clear:
-    user_input = ""
-
-# Analyze
 if st.button("Analyze News 🔍"):
 
     if user_input.strip() == "":
-        st.warning("Enter text first")
+        st.warning("Please enter some text")
     else:
         result, main_conf, other_conf = predict_news(user_input)
 
-        # ===============================
-        # RESULT
-        # ===============================
-        if result == "REAL":
-            st.success(f"🟢 REAL NEWS ({main_conf*100:.2f}%)")
-        else:
-            st.error(f"🔴 FAKE NEWS ({main_conf*100:.2f}%)")
+        st.markdown("<br>", unsafe_allow_html=True)
 
-        # ===============================
-        # STATS
-        # ===============================
+        # RESULT
+        if result == "REAL":
+            st.markdown(f'<div class="result-box real">🟢 REAL NEWS<br>{main_conf*100:.2f}%</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="result-box fake">🔴 FAKE NEWS<br>{main_conf*100:.2f}%</div>', unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # METRICS
         col1, col2 = st.columns(2)
 
         with col1:
             st.metric("Confidence", f"{main_conf*100:.2f}%")
 
         with col2:
-            st.metric("Opposite Score", f"{other_conf*100:.2f}%")
+            st.metric("Opposite", f"{other_conf*100:.2f}%")
 
         st.progress(float(main_conf))
 
-        # ===============================
-        # TABS
-        # ===============================
-        tab1, tab2 = st.tabs(["Result Details", "AI Explanation"])
-
-        with tab1:
-            st.write("### Analysis")
-            st.write(f"Prediction: {result}")
-            st.write(f"Confidence: {main_conf*100:.2f}%")
-
-        with tab2:
-            with st.spinner("Generating explanation..."):
-                explanation = get_ai_explanation(user_input, result)
-
+        # AI EXPLANATION
+        with st.expander("🤖 AI Explanation"):
+            explanation = get_ai_explanation(user_input, result)
             st.write(explanation)
 
-        # ===============================
-        # SHARE
-        # ===============================
-        st.code(user_input)
+st.markdown('</div>', unsafe_allow_html=True)
 
-        st.info("⚠️ AI prediction may not be 100% accurate")
-
-# Footer
-st.markdown("---")
-st.caption("Developed by You 🚀")
+st.markdown('<div class="footer">Developed by Muhammed and Ouku 🚀</div>', unsafe_allow_html=True)
